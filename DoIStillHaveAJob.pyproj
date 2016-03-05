@@ -26,6 +26,7 @@
     <Content Include="job.html" />
     <Content Include="home.html" />
     <Content Include="requirements.txt" />
+    <Content Include="runtime.txt" />
     <Content Include="static\default.css" />
     <Content Include="web.config" />
   </ItemGroup>
@@ -33,7 +34,6 @@
     <Compile Include="app.py" />
     <Compile Include="deploy.py" />
     <Compile Include="deploy_credentials.py" />
-    <Compile Include="generate_sample_data.py" />
     <Compile Include="routes.py" />
     <Compile Include="employees.py" />
   </ItemGroup>
