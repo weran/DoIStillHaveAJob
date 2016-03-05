@@ -22,6 +22,9 @@ else:
         def __init__(self):
             self.tables = defaultdict(dict)
 
+        def create_table(self, table):
+            self.tables[table]
+
         def insert_or_replace_entity(self, table, entity):
             self.tables[table][(entity['PartitionKey'], entity['RowKey'])] = entity
 
@@ -36,6 +39,8 @@ else:
 
     table_service = TableService()
 
+
+table_service.create_table(EMPLOYEE_TABLE_NAME)
 
 class Employee(object):
     def __init__(self, name, has_a_job):

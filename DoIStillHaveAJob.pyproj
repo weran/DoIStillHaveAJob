@@ -31,7 +31,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="app.py" />
-    <Compile Include="credentials.py" />
     <Compile Include="deploy.py" />
     <Compile Include="deploy_credentials.py" />
     <Compile Include="generate_sample_data.py" />
