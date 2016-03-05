@@ -13,13 +13,7 @@ if '--debug' in sys.argv[1:] or 'SERVER_DEBUG' in os.environ:
     import bottle
     bottle.debug(True)
 
-
 import routes
-
-def wsgi_app():
-    """Returns the application to make available through wfastcgi. This is used
-    when the site is published to Microsoft Azure."""
-    return default_app()
 
 if __name__ == '__main__':
     # Starts a local test server.
