@@ -1,4 +1,3 @@
---no-deps
 azure-common==1.1.0
 azure-nspkg==1.0.0
 azure-storage==0.30.0
