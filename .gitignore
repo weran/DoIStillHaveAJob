@@ -60,3 +60,11 @@ target/
 
 #Ipython Notebook
 .ipynb_checkpoints
+
+# Visual Studio Files
+*.user
+bin/
+obj/
+.vs/
+ptvs_virtualenv_proxy.py
+web.debug.config

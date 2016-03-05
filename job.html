@@ -1,0 +1,44 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>Does {{employee}} Still Have A Job</title>
+    <link href="static\default.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+    <h1>Does {{employee}} Still Have A Job</h1>
+    <div id="fix-this">
+        <a href="/fix?employee={{employee}}">Fix this</a>
+        by giving
+        <span class="employee-name">{{employee}}</span>
+        <span id="fix-this-action"></span>?
+    </div>
+
+    <div id="has-a-job">
+        <span class="yes">Yes!</span>
+        <span class="employee-name">{{employee}}</span>
+        still has a job!
+    </div>
+    <div id="has-no-job">
+        <span class="no">No!</span>
+        <span class="employee-name">{{employee}}</span>
+        does not work here.
+    </div>
+
+    <script type="text/javascript">
+        document.getElementById("{{'has-no-job' if has_a_job else 'has-a-job'}}")
+            .classList
+            .add("hidden");
+        %if has_a_job:
+        document.getElementById("fix-this-action").textContent = "the sack";
+        %else:
+        document.getElementById("fix-this-action").textContent = "a job";
+        %end
+    </script>
+
+    <div class="copyright">
+        Copyright {{year}} - {{company}}
+    </div>
+</body>
+</html>

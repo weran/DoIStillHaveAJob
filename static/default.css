@@ -1,0 +1,123 @@
+﻿html, body {
+    height: 100%;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.hidden {
+    display: none;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: grey;
+    font-size: 30px;
+}
+
+h1 {
+    margin: 0;
+    background-color: black;
+    color: white;
+    font-size: 56px;
+    padding: 0.5em 0.5em;
+}
+
+div#login {
+    float: left;
+    margin: 2em;
+    border: none;
+    padding: 1em;
+    border-spacing: 2em 0.4em;
+    border-collapse: separate;
+    border-radius: 15px;
+    box-shadow: 5px 5px 20px rgba(0,0,0,0.6);
+    background-color: whitesmoke;
+}
+
+    div#login input[type=text] {
+        font-size: large;
+        vertical-align: middle;
+        padding: 0.4em;
+    }
+
+    div#login input[type=submit] {
+        float: right;
+        margin-top: 1em;
+        padding: 1em;
+        font-size: large;
+    }
+
+div#has-a-job {
+    margin: 1em;
+    border: none;
+    padding: 1em;
+    border-spacing: 2em 0.4em;
+    border-collapse: separate;
+    border-radius: 15px;
+    background-color: lightgreen;
+}
+
+div#has-no-job {
+    margin: 1em;
+    border: none;
+    padding: 1em;
+    border-spacing: 2em 0.4em;
+    border-collapse: separate;
+    border-radius: 15px;
+    background-color: salmon;
+}
+
+.yes {
+    font-weight: 700;
+    text-decoration: underline;
+    color: darkgreen;
+}
+
+.no {
+    font-weight: 900;
+    text-decoration: underline;
+    color: darkred;
+}
+
+.employee-name {
+    font-weight: 600;
+    color: darkblue;
+}
+
+div#fix-this {
+    float: right;
+    margin: 1em;
+    max-width: 30%;
+    border: none;
+    padding: 0.5em;
+    border-spacing: 2em 0.4em;
+    border-collapse: separate;
+    border-radius: 5px;
+    box-shadow: 5px 5px 20px rgba(0,0,0,0.6);
+    font-size: 20px;
+    background-color: whitesmoke;
+}
+
+@media screen and (max-width: 800px) {
+    div#fix-this {
+        float: none;
+        max-width: none;
+        margin: 1em;
+        font-size: inherit;
+    }
+}
+
+@media screen and (orientation: portrait) {
+    div#fix-this {
+        float: none;
+        max-width: none;
+        margin: 1em;
+        font-size: inherit;
+   }
+}
+
+div.copyright {
+    position: absolute;
+    bottom: 0px;
+    font-size: small;
+}
