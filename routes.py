@@ -17,8 +17,8 @@ def home():
     )
 
 
-@route('/job')
-def job():
+@route('/employed')
+def employed():
     """Renders a page indicating whether an employee still has a job."""
     try:
         employee = get_employee(request.query['employee'])
@@ -26,7 +26,7 @@ def job():
         return template('error.html', reason='No employee was specified')
 
     return template(
-        'job.html',
+        'employed.html',
         employee=employee.name,
         has_a_job=employee.has_a_job,
         company=getenv("COMPANY_NAME", "My Company"),
@@ -44,9 +44,4 @@ def fix():
 
     employee.fix()
 
-    return redirect("/job?employee=" + employee.name)
-
-@route('/<filename:re:.*\.css>')
-@route('/static/<filename:re:.*\.css>')
-def static_css(filename):
-    return static_file(filename, root='static')
+    return redirect("/employed?employee=" + employee.name)

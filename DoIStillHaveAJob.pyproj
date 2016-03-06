@@ -23,11 +23,12 @@
     <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="job.html" />
+    <Content Include="employed.html" />
     <Content Include="home.html" />
     <Content Include="requirements.txt" />
     <Content Include="runtime.txt" />
     <Content Include="static\default.css" />
+    <Content Include="static\web.config" />
     <Content Include="web.config" />
   </ItemGroup>
   <ItemGroup>

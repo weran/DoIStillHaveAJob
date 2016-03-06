@@ -16,11 +16,15 @@ if '--debug' in sys.argv[1:] or 'SERVER_DEBUG' in os.environ:
 import routes
 
 if __name__ == '__main__':
+    import bottle
+    @bottle.route('/static/<filename:re:.*\.css>')
+    def static_css(filename):
+        return bottle.static_file(filename, root='static')
+
     # Starts a local test server.
     HOST = os.environ.get('SERVER_HOST', 'localhost')
     try:
         PORT = int(os.environ.get('SERVER_PORT', '5555'))
     except ValueError:
         PORT = 5555
-    import bottle
     bottle.run(server='wsgiref', host=HOST, port=PORT)
