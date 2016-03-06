@@ -1,21 +1,81 @@
-from deploy_credentials import CREDENTIALS, SUBSCRIPTION_ID
-from uuid import uuid4
+'''Deployment script for DoIStillHaveAJob
 
-# Create a resource group for our deployment
-RESOURCE_GROUP = "buildtest" + uuid4().hex
+This script will deploy the DoIStillHaveAJob web site in a new resource group.
+After deployment, the script will offer to open the site, and then delete all
+resources associated with it.
+
+Before running this script, see the section and link below on providing
+credentials to your Azure account.
+'''
+
+__author__ = "Steve Dower <steve.dower@microsoft.com>"
+__version__ = "1.0.0"
+
+import sys
+import uuid
+
+# See http://azure-sdk-for-python.readthedocs.org/en/latest/resourcemanagementauthentication.html
+# for info about setting CREDENTIALS
+
+from azure.common.credentials import UserPassCredentials
+try:
+    CREDENTIALS = UserPassCredentials(
+        '<Azure Active Directory username>',
+        '<password>',
+    )
+except:
+    CREDENTIALS = None
+
+# SUBSCRIPTION_ID should be a subscription that can be accessed with the
+# above credentials. If not provided, a list of available subscriptions will
+# be displayed and the script will exit.
+SUBSCRIPTION_ID = ''
+
+try:
+    # Credentials may be kept in a separate file outside of source control.
+    from deploy_credentials import CREDENTIALS, SUBSCRIPTION_ID
+except ImportError:
+    pass
+
+if not CREDENTIALS:
+    print("The provided credentials were invalid.", file=sys.stderr)
+    print("Review deploy.py and update deployment settings as necessary.", file=sys.stderr)
+    sys.exit(1)
+
+
+from azure.mgmt.resource.resources import ResourceManagementClientConfiguration, ResourceManagementClient
+from azure.mgmt.resource.subscriptions import SubscriptionClient, SubscriptionClientConfiguration
+from azure.mgmt.web import WebSiteManagementClientConfiguration, WebSiteManagementClient
+
+from azure.mgmt.resource.resources.models import ResourceGroup, DeploymentProperties, DeploymentMode
+
+if not SUBSCRIPTION_ID:
+    # Display a list of available subscriptions if SUBSCRIPTION_ID was not given
+
+    sc = SubscriptionClient(SubscriptionClientConfiguration(CREDENTIALS))
+    print('SUBSCRIPTION_ID was not provided. Select an id from the following list.')
+    for sub in sc.subscriptions.list():
+        print('    {}: {}'.format(sub.subscription_id, sub.display_name))
+    sys.exit(1)
+
+
+# Constants for this deployment.
+#
+# Some names have random UUIDs included to avoid collisions. They are not
+# necessary in controlled environments.
+RESOURCE_GROUP = "buildtest" + uuid.uuid4().hex
 LOCATION = "West US"
 
 COMPANY_NAME = "Contoso"
-DEPLOYMENT = "DoIStillHaveAJob"
-WEBSITE = "DoIStillHaveAJob"
-STORAGE = 's' + uuid4().hex[:23].lower()
+DEPLOYMENT = "ContosoInternalApps"
+WEBSITE = "DoIStillHaveAJob" + uuid.uuid4().hex
+STORAGE = 's' + uuid.uuid4().hex[:23].lower()
+
 WEBSITE_SOURCE = "https://github.com/zooba/DoIStillHaveAJob.git"
 
 
-# Import and configure management clients for resources and web sites
+# Create management clients
 
-from azure.mgmt.resource.resources import ResourceManagementClientConfiguration, ResourceManagementClient
-from azure.mgmt.web import WebSiteManagementClientConfiguration, WebSiteManagementClient
 rc = ResourceManagementClient(ResourceManagementClientConfiguration(
     credentials=CREDENTIALS,
     subscription_id=SUBSCRIPTION_ID,
@@ -34,24 +94,31 @@ ws = WebSiteManagementClient(WebSiteManagementClientConfiguration(
 
 print("Creating resource group:", RESOURCE_GROUP)
 
-from azure.mgmt.resource.resources.models import ResourceGroup
 rc.resource_groups.create_or_update(RESOURCE_GROUP, ResourceGroup(location=LOCATION))
 
 #################################################
 # Deploy a resource manager template
 #
+# This template defines our entire service, including
+# the storage account and website. After deployment
+# is complete, our site is ready to use.
 #
+# Available arguments for templates can be found
+# at http://aka.ms/arm-template and http://resources.azure.com
 print("Deploying:", DEPLOYMENT)
 
 TEMPLATE = {
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
+    # These parameters may be referred to throughout the template.
+    # They will be filled in below from PARAMETERS
     "parameters": {
         "siteName": { "type": "string" },
-        "hostingPlanName": { "type": "string" },
+        "hostingPlanName": { "type": "string", "defaultValue": "InternalApps" },
         "storageName": { "type": "string" },
         "siteLocation": { "type": "string" },
         "repoUrl": { "type": "string" },
+        "companyName": { "type": "string", "defaultValue": COMPANY_NAME },
     },
     "resources": [
         # Create a server farm for us to run our web site in
@@ -83,7 +150,8 @@ TEMPLATE = {
                 "serverFarmId": "[parameters('hostingPlanName')]",
             },
             "resources": [
-                # Configure appsettings for the website
+                # Configure appsettings for the website. These will be
+                # available within our handler as environment variables.
                 {
                     "apiVersion": "2015-08-01",
                     "name": "appsettings",
@@ -93,10 +161,10 @@ TEMPLATE = {
                         "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageName'))]",
                     ],
                     "properties": {
-                        "COMPANY_NAME": COMPANY_NAME,
+                        "COMPANY_NAME": "[parameters('companyName')]",
 
-                        # Include the name and key from the storage account we
-                        # created above.
+                        # Calculate the name and key from the storage account we
+                        # just created.
                         "STORAGE_ACCOUNT_NAME": "[parameters('storageName')]",
                         "STORAGE_ACCOUNT_KEY": "[listkeys(" +
                         "resourceId('Microsoft.Storage/storageAccounts', parameters('storageName')), " +
@@ -104,6 +172,7 @@ TEMPLATE = {
                         ").key1]",
                     }
                 },
+
                 # Configure deployment from source control
                 {
                     "apiVersion": "2015-08-01",
@@ -124,15 +193,16 @@ TEMPLATE = {
     ]
 }
 
+# PARAMETERS will be merged with TEMPLATE on the server to produce
+# our specific deployment. This allows templates to be reused without
+# modification.
 PARAMETERS = {
     "siteLocation": { "value": "West US" },
-    "hostingPlanName": { "value": "InternalApps" },
     "siteName": { "value": WEBSITE },
     "storageName": { "value": STORAGE },
     "repoUrl": { "value": WEBSITE_SOURCE },
 }
 
-from azure.mgmt.resource.resources.models import DeploymentProperties, DeploymentMode
 rc.deployments.create_or_update(
     RESOURCE_GROUP,
     DEPLOYMENT,
@@ -141,7 +211,7 @@ rc.deployments.create_or_update(
         template=TEMPLATE,
         parameters=PARAMETERS,
     )
-).wait()
+).result()
 
 #################################################
 # Get our website's URL
@@ -164,4 +234,4 @@ if input("Browse to {}? [y/N] ".format(conf.host_names[0])):
 # This quickly cleans up all of our resources.
 
 if input("Delete resource group? [y/N] "):
-    rc.resource_groups.delete(RESOURCE_GROUP).wait()
+    rc.resource_groups.delete(RESOURCE_GROUP).result()
