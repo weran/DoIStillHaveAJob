@@ -63,7 +63,7 @@ if not SUBSCRIPTION_ID:
 #
 # Some names have random UUIDs included to avoid collisions. They are not
 # necessary in controlled environments.
-RESOURCE_GROUP = "buildtest" + uuid.uuid4().hex
+RESOURCE_GROUP = "demo" + uuid.uuid4().hex
 LOCATION = "West US"
 
 COMPANY_NAME = "Contoso"
@@ -108,96 +108,96 @@ rc.resource_groups.create_or_update(RESOURCE_GROUP, ResourceGroup(location=LOCAT
 print("Deploying:", DEPLOYMENT)
 
 TEMPLATE = {
-    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
-    # These parameters may be referred to throughout the template.
-    # They will be filled in below from PARAMETERS
-    "parameters": {
-        "siteName": { "type": "string" },
-        "hostingPlanName": { "type": "string", "defaultValue": "InternalApps" },
-        "storageName": { "type": "string" },
-        "siteLocation": { "type": "string" },
-        "repoUrl": { "type": "string" },
-        "companyName": { "type": "string", "defaultValue": COMPANY_NAME },
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  # These parameters may be referred to throughout the template.
+  # They will be filled in below from PARAMETERS
+  "parameters": {
+    "siteName": { "type": "string" },
+    "hostingPlanName": { "type": "string", "defaultValue": "InternalApps" },
+    "storageName": { "type": "string" },
+    "siteLocation": { "type": "string" },
+    "repoUrl": { "type": "string" },
+    "companyName": { "type": "string", "defaultValue": COMPANY_NAME },
+  },
+  "resources": [
+    # Create a server farm for us to run our web site in
+    {
+      "apiVersion": "2015-08-01",
+      "name": "[parameters('hostingPlanName')]",
+      "type": "Microsoft.Web/serverfarms",
+      "location": "[parameters('siteLocation')]",
+      "sku": { "name": "F1" },
     },
-    "resources": [
-        # Create a server farm for us to run our web site in
+    # Create a storage account for our table
+    {
+      "apiVersion": "2015-05-01-preview",
+      "name": "[parameters('storageName')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "location": "[parameters('siteLocation')]",
+      "properties": {
+        "accountType": "Standard_LRS"
+      }
+    },
+    # Create and configure our web site
+    {
+      "apiVersion": "2015-08-01",
+      "name": "[parameters('siteName')]",
+      "type": "Microsoft.Web/sites",
+      "location": "[parameters('siteLocation')]",
+      "dependsOn": [ "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]" ],
+      "properties": {
+        "serverFarmId": "[parameters('hostingPlanName')]",
+      },
+      "resources": [
+        # Configure appsettings for the website. These will be
+        # available within our handler as environment variables.
         {
-            "apiVersion": "2015-08-01",
-            "name": "[parameters('hostingPlanName')]",
-            "type": "Microsoft.Web/serverfarms",
-            "location": "[parameters('siteLocation')]",
-            "sku": { "name": "F1" },
-        },
-        # Create a storage account for our table
-        {
-            "apiVersion": "2015-05-01-preview",
-            "name": "[parameters('storageName')]",
-            "type": "Microsoft.Storage/storageAccounts",
-            "location": "[parameters('siteLocation')]",
-            "properties": {
-                "accountType": "Standard_LRS"
-            }
-        },
-        # Create and configure our web site
-        {
-            "apiVersion": "2015-08-01",
-            "name": "[parameters('siteName')]",
-            "type": "Microsoft.Web/sites",
-            "location": "[parameters('siteLocation')]",
-            "dependsOn": [ "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]" ],
-            "properties": {
-                "serverFarmId": "[parameters('hostingPlanName')]",
-            },
-            "resources": [
-                # Configure appsettings for the website. These will be
-                # available within our handler as environment variables.
-                {
-                    "apiVersion": "2015-08-01",
-                    "name": "appsettings",
-                    "type": "config",
-                    "dependsOn": [
-                        "[resourceId('Microsoft.Web/Sites', parameters('siteName'))]",
-                        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageName'))]",
-                    ],
-                    "properties": {
-                        "COMPANY_NAME": "[parameters('companyName')]",
+          "apiVersion": "2015-08-01",
+          "name": "appsettings",
+          "type": "config",
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/Sites', parameters('siteName'))]",
+            "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageName'))]",
+          ],
+          "properties": {
+            "COMPANY_NAME": "[parameters('companyName')]",
 
-                        # Calculate the name and key from the storage account we
-                        # just created.
-                        "STORAGE_ACCOUNT_NAME": "[parameters('storageName')]",
-                        "STORAGE_ACCOUNT_KEY": "[listkeys(" +
-                        "resourceId('Microsoft.Storage/storageAccounts', parameters('storageName')), " +
-                            "providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]" + 
-                        ").key1]",
-                    }
-                },
-
-                # Configure deployment from source control
-                {
-                    "apiVersion": "2015-08-01",
-                    "name": "web",
-                    "type": "sourcecontrols",
-                    "dependsOn": [ 
-                        "[resourceId('Microsoft.Web/Sites', parameters('siteName'))]",
-                        "[resourceId('Microsoft.Web/Sites/config', parameters('siteName'), 'appSettings')]",
-                    ],
-                    "properties": {
-                        "repoUrl": "[parameters('repoUrl')]",
-                        "branch": "master",
-                        "isManualIntegration": True,
-                    }
-                },
-            ]
+            # Calculate the name and key from the storage account we
+            # just created.
+            "STORAGE_ACCOUNT_NAME": "[parameters('storageName')]",
+            "STORAGE_ACCOUNT_KEY": "[listkeys(" +
+            "resourceId('Microsoft.Storage/storageAccounts', parameters('storageName')), " +
+              "providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]" + 
+            ").key1]",
+          }
         },
-    ]
+
+        # Configure deployment from source control
+        {
+          "apiVersion": "2015-08-01",
+          "name": "web",
+          "type": "sourcecontrols",
+          "dependsOn": [ 
+            "[resourceId('Microsoft.Web/Sites', parameters('siteName'))]",
+            "[resourceId('Microsoft.Web/Sites/config', parameters('siteName'), 'appSettings')]",
+          ],
+          "properties": {
+            "repoUrl": "[parameters('repoUrl')]",
+            "branch": "master",
+            "isManualIntegration": True,
+          }
+        },
+      ]
+    },
+  ]
 }
 
 # PARAMETERS will be merged with TEMPLATE on the server to produce
 # our specific deployment. This allows templates to be reused without
 # modification.
 PARAMETERS = {
-    "siteLocation": { "value": "West US" },
+    "siteLocation": { "value": LOCATION },
     "siteName": { "value": WEBSITE },
     "storageName": { "value": STORAGE },
     "repoUrl": { "value": WEBSITE_SOURCE },
