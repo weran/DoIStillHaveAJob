@@ -14,6 +14,9 @@ __version__ = "1.0.0"
 import sys
 import uuid
 
+#################################################
+#region Credential Boilerplate
+
 # See http://azure-sdk-for-python.readthedocs.org/en/latest/resourcemanagementauthentication.html
 # for info about setting CREDENTIALS
 
@@ -42,27 +45,31 @@ if not CREDENTIALS:
     print("Review deploy.py and update deployment settings as necessary.", file=sys.stderr)
     sys.exit(1)
 
-
-from azure.mgmt.resource.resources import ResourceManagementClientConfiguration, ResourceManagementClient
-from azure.mgmt.resource.subscriptions import SubscriptionClient, SubscriptionClientConfiguration
-from azure.mgmt.web import WebSiteManagementClientConfiguration, WebSiteManagementClient
-
-from azure.mgmt.resource.resources.models import ResourceGroup, DeploymentProperties, DeploymentMode
-
 if not SUBSCRIPTION_ID:
     # Display a list of available subscriptions if SUBSCRIPTION_ID was not given
 
+    from azure.mgmt.resource.subscriptions import SubscriptionClient, SubscriptionClientConfiguration
     sc = SubscriptionClient(SubscriptionClientConfiguration(CREDENTIALS))
     print('SUBSCRIPTION_ID was not provided. Select an id from the following list.')
     for sub in sc.subscriptions.list():
         print('    {}: {}'.format(sub.subscription_id, sub.display_name))
     sys.exit(1)
 
+#endregion
+#################################################
 
+from azure.mgmt.resource.resources import ResourceManagementClientConfiguration, ResourceManagementClient
+from azure.mgmt.web import WebSiteManagementClientConfiguration, WebSiteManagementClient
+
+from azure.mgmt.resource.resources.models import ResourceGroup, DeploymentProperties, DeploymentMode
+
+
+#################################################
 # Constants for this deployment.
 #
-# Some names have random UUIDs included to avoid collisions. They are not
-# necessary in controlled environments.
+# Some names include random UUIDs to avoid collisions.
+# These are not necessary in controlled environments.
+
 RESOURCE_GROUP = "demo" + uuid.uuid4().hex
 LOCATION = "West US"
 
@@ -74,6 +81,7 @@ STORAGE = 's' + uuid.uuid4().hex[:23].lower()
 WEBSITE_SOURCE = "https://github.com/zooba/DoIStillHaveAJob.git"
 
 
+#################################################
 # Create management clients
 
 rc = ResourceManagementClient(ResourceManagementClientConfiguration(
@@ -105,6 +113,7 @@ rc.resource_groups.create_or_update(RESOURCE_GROUP, ResourceGroup(location=LOCAT
 #
 # Available arguments for templates can be found
 # at http://aka.ms/arm-template and http://resources.azure.com
+
 print("Deploying:", DEPLOYMENT)
 
 TEMPLATE = {
