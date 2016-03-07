@@ -75,7 +75,7 @@ LOCATION = "West US"
 
 COMPANY_NAME = "Contoso"
 DEPLOYMENT = "ContosoInternalApps"
-WEBSITE = "DoIStillHaveAJob" + uuid.uuid4().hex
+WEBSITE = "DoIStillHaveAJob" #+ uuid.uuid4().hex
 STORAGE = 's' + uuid.uuid4().hex[:23].lower()
 
 WEBSITE_SOURCE = "https://github.com/zooba/DoIStillHaveAJob.git"
@@ -136,7 +136,7 @@ TEMPLATE = {
       "name": "[parameters('hostingPlanName')]",
       "type": "Microsoft.Web/serverfarms",
       "location": "[parameters('siteLocation')]",
-      "sku": { "name": "F1" },
+      "sku": { "name": "S1" },
     },
     # Create a storage account for our table
     {
@@ -229,9 +229,11 @@ rc.deployments.create_or_update(
 # affected by configuration in the template.
 
 conf = ws.sites.get_site(RESOURCE_GROUP, WEBSITE)
+print()
 print('Site is available at:')
 for name in conf.host_names:
     print('   ', name)
+print()
 
 if input("Browse to {}? [y/N] ".format(conf.host_names[0])):
     import webbrowser
@@ -242,5 +244,6 @@ if input("Browse to {}? [y/N] ".format(conf.host_names[0])):
 #
 # This quickly cleans up all of our resources.
 
+print()
 if input("Delete resource group? [y/N] "):
     rc.resource_groups.delete(RESOURCE_GROUP).result()
