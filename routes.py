@@ -4,8 +4,17 @@ Provides the handlers for the URLs supported by this site.
 
 from bottle import route, template, static_file, request, redirect
 from os import getenv
-from employees import get_employee
+from employees import Employee
 from datetime import date
+
+def error(reason):
+    return template(
+        'error.html',
+        reason=reason,
+        company=getenv("COMPANY_NAME", "My Company"),
+        year=date.today().year,
+    )
+
 
 @route('/')
 def home():
@@ -16,14 +25,13 @@ def home():
         year=date.today().year,
     )
 
-
 @route('/employed')
 def employed():
     """Renders a page indicating whether an employee still has a job."""
     try:
-        employee = get_employee(request.query['employee'])
+        employee = Employee.get(request.query['employee'])
     except LookupError:
-        return template('error.html', reason='No employee was specified')
+        return error('No employee was specified')
 
     return template(
         'employed.html',
@@ -38,9 +46,9 @@ def fix():
     """Handles requests to correct an employee's status, then redirects
     to their page."""
     try:
-        employee = get_employee(request.query['employee'])
+        employee = Employee.get(request.query['employee'])
     except LookupError:
-        return template('error.html', reason='No employee was specified')
+        return error('No employee was specified')
 
     employee.fix()
 

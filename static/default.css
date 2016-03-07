@@ -47,6 +47,21 @@ div#login {
         font-size: large;
     }
 
+div#error {
+    float: left;
+    margin: 2em;
+    border: none;
+    padding: 1em;
+    border-spacing: 2em 0.4em;
+    border-collapse: separate;
+    border-radius: 15px;
+    box-shadow: 5px 5px 20px rgba(0,0,0,0.6);
+    background-color: red;
+}
+    div#error h2 {
+        margin-top: 0;
+    }
+
 div#has-a-job {
     margin: 1em;
     border: none;

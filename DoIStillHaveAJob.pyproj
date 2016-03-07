@@ -24,6 +24,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="employed.html" />
+    <Content Include="error.html" />
     <Content Include="home.html" />
     <Content Include="requirements.txt" />
     <Content Include="runtime.txt" />
@@ -33,6 +34,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="app.py" />
+    <Compile Include="mocktableservice.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="routes.py" />
     <Compile Include="employees.py" />
   </ItemGroup>
