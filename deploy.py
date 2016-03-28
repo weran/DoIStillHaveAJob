@@ -177,7 +177,7 @@ TEMPLATE = {
             "STORAGE_ACCOUNT_NAME": "[parameters('storageName')]",
             "STORAGE_ACCOUNT_KEY": "[listkeys(" +
             "resourceId('Microsoft.Storage/storageAccounts', parameters('storageName')), " +
-              "providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]" + 
+              "'2015-05-01-preview'" +
             ").key1]",
           }
         },
